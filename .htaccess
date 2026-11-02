@@ -1,0 +1,11 @@
+# Fichiers internes : jamais servis directement
+<FilesMatch "^(config\.local\.php|config\.example\.php|fonctions\.php|envoyer_mail\.php|database\.sql|\.gitignore)$">
+    Require all denied
+</FilesMatch>
+
+# Bibliothèque PHPMailer : uniquement incluse côté serveur
+<If "%{REQUEST_URI} =~ m#/PHPMailer/#">
+    Require all denied
+</If>
+
+Options -Indexes

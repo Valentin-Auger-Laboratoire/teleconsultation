@@ -1,0 +1,109 @@
+/* --- STYLE GÉNÉRAL --- */
+body {
+    background-color: #f0f4f8 !important; /* Gris-bleu très clair */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.card {
+    border: none !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Petit effet au survol */
+}
+
+.navbar {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background-color: #0056b3 !important;
+    border: none !important;
+}
+
+/* Zone vidéo */
+.video-main {
+    background: radial-gradient(circle, #444 0%, #222 100%) !important;
+    border: 3px solid #0056b3 !important;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- AJOUTS POUR LE CHAT ET LES DOCUMENTS --- */
+
+/* Conteneur des messages */
+#chat-box {
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+/* Bulle de celui qui envoie (TOI) : Jaune à droite */
+.msg-doc {
+    align-self: flex-end;
+    background-color: #ffc107 !important; /* Jaune */
+    color: #000 !important;
+    padding: 8px 12px;
+    border-radius: 15px 15px 0 15px;
+    max-width: 85%;
+    font-size: 0.9rem;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Bulle de celui qui reçoit (L'AUTRE) : Blanc à gauche */
+.msg-patient {
+    align-self: flex-start;
+    background-color: #ffffff !important; /* Blanc */
+    color: #333 !important;
+    padding: 8px 12px;
+    border-radius: 15px 15px 15px 0;
+    max-width: 85%;
+    font-size: 0.9rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Label de l'heure sous les messages */
+.time-label {
+    display: block;
+    font-size: 0.7rem;
+    margin-top: 4px;
+    opacity: 0.6;
+    text-align: inherit;
+}
+
+/* Liste des documents */
+#liste-docs {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.doc-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.85rem;
+}
+
+.doc-item:last-child {
+    border-bottom: none;
+}
+
+/* Scrollbar personnalisée pour le chat */
+#chat-box::-webkit-scrollbar {
+    width: 6px;
+}
+#chat-box::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}

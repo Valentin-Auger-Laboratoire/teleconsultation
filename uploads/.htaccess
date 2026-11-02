@@ -1,0 +1,10 @@
+# Dossier des fichiers envoyés : aucun accès direct ni exécution.
+# Les téléchargements passent par telecharger_doc.php, qui vérifie les droits.
+Require all denied
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+Options -ExecCGI -Indexes

@@ -1,0 +1,11 @@
+# Configuration locale (identifiants base de données et SMTP)
+config.local.php
+
+# Fichiers envoyés par les utilisateurs (seul le .htaccess est versionné)
+uploads/*
+!uploads/.htaccess
+
+# Binaires et fichiers système
+*.exe
+.DS_Store
+Thumbs.db

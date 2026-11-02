@@ -1,0 +1,59 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SantéConnect - Connexion Patient</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .login-container { max-width: 400px; margin-top: 100px; }
+    </style>
+</head>
+<body>
+
+<div class="container login-container">
+    <div class="card shadow border-0">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4">Connexion Patient</h3>
+            
+            <form action="login.php" method="POST">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Adresse Email</label>
+                    <input type="email" name="email" class="form-control" id="email" placeholder="nom@exemple.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input type="password" name="password" class="form-control" id="password" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember">
+                    <label class="form-check-label" for="remember">Se souvenir de moi</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Se connecter en tant que Patient</button>
+            </form>
+            
+            <hr>
+            <div class="text-center">
+                <p class="small">Pas encore de compte ? <a href="inscription.html">Créer un compte patient</a></p>
+                <a href="index-medecin.html" class="btn btn-outline-secondary btn-sm">Vous êtes médecin ? Cliquez ici</a>
+            </div>
+        </div>
+    </div>
+    
+    <p class="text-center mt-4 text-muted small">Prototype pédagogique – non conforme HDS, ne pas utiliser avec de vraies données de santé</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    if (new URLSearchParams(location.search).get('success') === 'compte_active') {
+        alert('Compte activé ! Vous pouvez vous connecter.');
+    }
+</script>
+</body>
+</html>

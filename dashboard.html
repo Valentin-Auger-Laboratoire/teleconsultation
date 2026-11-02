@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SantéConnect - Mon Espace Santé</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .card-menu-colle { margin-bottom: 0 !important; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+        .card-rdv-colle { border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; border-top: 0 !important; }
+        .shadow-sm { box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important; }
+        #contenuDocument { white-space: pre-wrap; }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">SantéConnect</a>
+        <div class="navbar-nav ms-auto align-items-center">
+            <span class="navbar-text me-3 text-white">Bienvenue<strong id="nomUtilisateur"></strong></span>
+            <a class="btn btn-outline-light btn-sm" href="logout.php">Déconnexion</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Prochaine Consultation</h5>
+                    <p class="card-text text-primary fs-5"><strong id="prochaineConsultation">Aucune consultation confirmée</strong></p>
+                    <a href="#" id="lienConsultation" class="btn btn-success w-100 py-2 fw-bold d-none">Rejoindre l'appel</a>
+                </div>
+            </div>
+
+            <div class="list-group shadow-sm border-0 card-menu-colle small">
+                <a href="#" class="list-group-item list-group-item-action active">Mon Profil</a>
+                <a href="paiement.php" class="list-group-item list-group-item-action"><i class="bi bi-credit-card me-2"></i>Mes Factures & Paiement</a>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4 card-rdv-colle">
+                <div class="card-header bg-white py-2"><h6 class="mb-0 small fw-bold">Mes rendez-vous</h6></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0" style="font-size: 0.8rem;">
+                        <tbody id="corpsTableauRDV">
+                            <tr><td class="text-center py-3">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-primary fw-bold">Prendre un nouveau rendez-vous</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formRDV" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Médecin</label>
+                            <select class="form-select" id="selectionMedecin" onchange="chargerCreneaux()">
+                                <option value="">Chargement des médecins...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Créneau disponible</label>
+                            <select class="form-select" id="selectionCreneau">
+                                <option value="">Choisissez un médecin</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small">Motif (Symptômes)</label>
+                            <textarea class="form-control" id="selectionMotif" rows="2" maxlength="500" placeholder="Expliquez brièvement votre besoin..."></textarea>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="button" class="btn btn-primary px-4 fw-bold" onclick="reserverRDV()">Réserver</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Espace Documents</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('uploadInput').click()">
+                        <i class="bi bi-upload me-1"></i> Transférer un fichier
+                    </button>
+                    <input type="file" id="uploadInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="transfererFichier(this)">
+                </div>
+                <div class="card-body" id="listeDocuments">
+                    <div class="text-center text-muted py-3">Mise à jour des documents...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDocument" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="titreDocument"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body" id="contenuDocument"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Toutes les données serveur sont insérées avec textContent / createElement (pas d'innerHTML sur des données)
+function el(tag, classe, texte) {
+    const e = document.createElement(tag);
+    if (classe) e.className = classe;
+    if (texte !== undefined) e.textContent = texte;
+    return e;
+}
+
+function lireJson(reponse) {
+    if (reponse.status === 401 || reponse.status === 403) {
+        window.location.href = 'index.html';
+        throw new Error('non connecté');
+    }
+    return reponse.json();
+}
+
+// UTILISATEUR CONNECTÉ
+fetch('moi.php').then(lireJson).then(moi => {
+    document.getElementById('nomUtilisateur').textContent = ', ' + moi.prenom;
+}).catch(() => {});
+
+// LISTE DES MÉDECINS
+function chargerMedecins() {
+    fetch('get_medecins.php').then(lireJson).then(medecins => {
+        const select = document.getElementById('selectionMedecin');
+        select.replaceChildren(...medecins.map(m => {
+            const option = el('option', '', 'Dr. ' + m.prenom + ' ' + m.nom + (m.specialite ? ' (' + m.specialite + ')' : ''));
+            option.value = m.id;
+            return option;
+        }));
+        if (medecins.length === 0) select.replaceChildren(el('option', '', 'Aucun médecin disponible'));
+        chargerCreneaux();
+    }).catch(() => {});
+}
+
+// CHARGER LES CRÉNEAUX DU MÉDECIN
+function chargerCreneaux() {
+    const idMedecin = document.getElementById('selectionMedecin').value;
+    const select = document.getElementById('selectionCreneau');
+    if (!idMedecin) return;
+    select.replaceChildren(el('option', '', 'Chargement...'));
+
+    fetch('get_creneaux.php?id_medecin=' + encodeURIComponent(idMedecin))
+    .then(lireJson)
+    .then(data => {
+        if (!data || data.length === 0) {
+            const vide = el('option', '', 'Aucun créneau disponible');
+            vide.value = '';
+            select.replaceChildren(vide);
+            return;
+        }
+        select.replaceChildren(...data.map(c => {
+            const option = el('option', '', c.libelle);
+            option.value = c.id;
+            return option;
+        }));
+    })
+    .catch(() => {
+        select.replaceChildren(el('option', '', 'Erreur de chargement'));
+    });
+}
+
+// RÉSERVER UN RENDEZ-VOUS
+function reserverRDV() {
+    const creneauId = document.getElementById('selectionCreneau').value;
+    if (!creneauId) { alert("Choisissez un créneau disponible."); return; }
+
+    const formData = new FormData();
+    formData.append('id_creneau', creneauId);
+    formData.append('motif', document.getElementById('selectionMotif').value);
+
+    fetch('save_rdv.php', { method: 'POST', body: formData })
+    .then(lireJson)
+    .then(data => {
+        if (data.ok) {
+            alert("Rendez-vous envoyé ! En attente de confirmation du médecin.");
+            document.getElementById('selectionMotif').value = '';
+            chargerRDV();
+            chargerCreneaux();
+        } else {
+            alert(data.erreur === 'creneau_indisponible' ? "Ce créneau vient d'être réservé, choisissez-en un autre." : "Erreur lors de la réservation.");
+            chargerCreneaux();
+        }
+    });
+}
+
+// CHARGER LA LISTE DES RDV
+function chargerRDV() {
+    fetch('get_rdv.php').then(lireJson).then(data => {
+        const corps = document.getElementById('corpsTableauRDV');
+        if (data.length === 0) {
+            const ligne = el('tr');
+            ligne.appendChild(el('td', 'p-3 text-center', 'Aucun rendez-vous.'));
+            corps.replaceChildren(ligne);
+        } else {
+            corps.replaceChildren(...data.map(rdv => {
+                const ligne = el('tr');
+                const infos = el('td', 'p-2');
+                infos.append(el('strong', '', rdv.date_rdv), el('br'), el('span', 'text-muted', rdv.medecin));
+
+                const actions = el('td', 'text-end p-2');
+                const badges = { 'Confirmé': 'bg-success', 'Terminé': 'bg-secondary' };
+                actions.appendChild(el('span', 'badge ' + (badges[rdv.statut] || 'bg-warning text-dark'), rdv.statut));
+                if (rdv.statut === 'Confirmé') {
+                    const lien = el('a', 'btn btn-sm btn-success py-0 ms-1', 'Rejoindre');
+                    lien.href = 'consultation.php?id=' + encodeURIComponent(rdv.id);
+                    actions.appendChild(lien);
+                }
+                if (rdv.montant > 0 && rdv.statut_paiement == 0) {
+                    const payer = el('a', 'btn btn-sm btn-outline-success py-0 ms-1', 'Payer');
+                    payer.href = 'paiement.php?id=' + encodeURIComponent(rdv.id);
+                    actions.appendChild(payer);
+                }
+                ligne.append(infos, actions);
+                return ligne;
+            }));
+        }
+
+        // Prochaine consultation confirmée
+        const prochaine = data.find(r => r.statut === 'Confirmé');
+        const lien = document.getElementById('lienConsultation');
+        document.getElementById('prochaineConsultation').textContent = prochaine
+            ? prochaine.date_rdv + ' – ' + prochaine.medecin
+            : 'Aucune consultation confirmée';
+        lien.classList.toggle('d-none', !prochaine);
+        if (prochaine) lien.href = 'consultation.php?id=' + encodeURIComponent(prochaine.id);
+    }).catch(() => {});
+}
+
+// ENVOI D'UN FICHIER DANS L'ESPACE DOCUMENTS
+function transfererFichier(input) {
+    if (input.files.length === 0) return;
+    const formData = new FormData();
+    formData.append('fichier', input.files[0]);
+    formData.append('type', 'Autre fichier');
+    fetch('upload_doc.php', { method: 'POST', body: formData })
+    .then(lireJson)
+    .then(data => {
+        alert(data.ok ? "Fichier transféré avec succès." : ({
+            type_non_autorise: "Seuls les fichiers PDF, JPG et PNG sont acceptés.",
+            fichier_trop_lourd: "Le fichier dépasse 5 Mo."
+        }[data.erreur] || "Erreur lors de l'envoi."));
+        input.value = '';
+        chargerDocuments();
+    });
+}
+
+// CHARGER LES DOCUMENTS (ORDONNANCES DU MÉDECIN ET FICHIERS ENVOYÉS)
+function afficherDocument(doc) {
+    document.getElementById('titreDocument').textContent = doc.type_doc + ' – ' + doc.date_creation;
+    document.getElementById('contenuDocument').textContent = doc.contenu;
+    new bootstrap.Modal(document.getElementById('modalDocument')).show();
+}
+
+function chargerDocuments() {
+    fetch('get_documents.php').then(lireJson).then(data => {
+        const zone = document.getElementById('listeDocuments');
+        if (!data || data.length === 0) {
+            zone.replaceChildren(el('div', 'text-center text-muted py-3 small', 'Aucun document.'));
+            return;
+        }
+        const liste = el('div', 'list-group list-group-flush');
+        data.forEach(doc => {
+            const ligne = el('div', 'list-group-item d-flex justify-content-between align-items-center py-2');
+            const libelle = el('div', 'small');
+            libelle.append(el('i', 'bi bi-file-earmark-text me-2 text-primary'),
+                document.createTextNode(doc.type_doc + (doc.nom_original ? ' – ' + doc.nom_original : '') + ' (' + doc.date_creation + ')'));
+            let action;
+            if (doc.a_fichier) {
+                action = el('a', 'btn btn-sm btn-link text-decoration-none', 'Télécharger');
+                action.href = 'telecharger_doc.php?id=' + encodeURIComponent(doc.id);
+            } else {
+                action = el('button', 'btn btn-sm btn-link text-decoration-none', 'Voir');
+                action.addEventListener('click', () => afficherDocument(doc));
+            }
+            ligne.append(libelle, action);
+            liste.appendChild(ligne);
+        });
+        zone.replaceChildren(liste);
+    }).catch(() => {});
+}
+
+// MISE À JOUR AUTOMATIQUE
+setInterval(chargerRDV, 5000);
+chargerRDV();
+chargerDocuments();
+chargerMedecins();
+</script>
+</body>
+</html>
