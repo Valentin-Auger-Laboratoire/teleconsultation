@@ -4,6 +4,8 @@
 
 [Français](#français) · [English](#english)
 
+**▶ Démo en ligne (sans serveur) : https://valentin-auger-laboratoire.github.io/teleconsultation/**
+
 ---
 
 ## Français
@@ -20,6 +22,20 @@ SantéConnect est une application web de téléconsultation réalisée en PHP et
 - **Documents** : le patient envoie des PDF, JPG ou PNG ; le médecin les télécharge.
 - **Ordonnance numérique** : enregistrée pour le patient de la consultation, affichée dans son espace et envoyée par mail.
 - **Facturation** : le médecin saisit un montant, le patient le voit en direct puis effectue un **paiement simulé**.
+
+### Démo en ligne (mode démo statique)
+
+Une version statique est publiée sur GitHub Pages depuis le dossier `docs/` : **https://valentin-auger-laboratoire.github.io/teleconsultation/**. Elle ne modifie en rien le fonctionnement PHP normal.
+
+- Sur la page d'accueil, **Entrer comme patient (démo)** ou **Entrer comme médecin (démo)** connecte directement un compte fictif. Ouvrez un 2e onglet avec l'autre rôle pour voir le chat, la facture et la visio en direct.
+- `docs/` contient une copie des pages front (HTML, CSS, JS) et `demo-api.js`, qui remplace tous les appels aux scripts PHP par des réponses simulées. Les données fictives (médecins, créneaux, rendez-vous, messages, factures, documents) sont stockées dans le `localStorage` du navigateur ; l'utilisateur connecté est propre à chaque onglet (`sessionStorage`). **Aucun fichier PHP, aucune configuration ni aucun secret** dans `docs/`.
+- Les onglets se synchronisent avec l'événement `storage` : rendez-vous confirmé, messages du chat, facture et statut de paiement apparaissent tout de suite dans l'autre onglet.
+- La visio utilise PeerJS et son serveur cloud public, avec des identifiants aléatoires partagés entre les onglets via le `localStorage`. Si la caméra est refusée ou absente, un message l'explique et l'appel reste possible (vous voyez l'autre participant s'il a une caméra).
+- L'e-mail d'ordonnance s'affiche dans une fenêtre d'aperçu (rien n'est envoyé), l'inscription saute la vérification par e-mail et le paiement reste simulé (aucun champ carte).
+- Un bandeau rappelle sur chaque page « Mode démo – données fictives, aucun serveur, rien n'est envoyé », avec un bouton **Réinitialiser la démo** qui efface les données de la démo.
+- Les fichiers déposés de plus de 1 Mo sont acceptés, mais seul leur nom est conservé (le `localStorage` est limité à quelques Mo).
+
+Pour la publier : *Settings → Pages → Deploy from a branch*, branche `main`, dossier `/docs`. Pour l'essayer en local, servez `docs/` avec n'importe quel serveur statique (par exemple `python -m http.server`), puis ouvrez `http://localhost:8000/`.
 
 ### Architecture
 
@@ -132,6 +148,8 @@ Quatre créneaux libres sont créés sur les jours qui suivent l'import.
 
 > ⚠️ **Educational prototype – not HDS-compliant (French health data hosting standard). Do not use with real health data.**
 
+**▶ Live demo (no server): https://valentin-auger-laboratoire.github.io/teleconsultation/**
+
 SantéConnect is a PHP/MySQL telemedicine web app. A patient books one of the time slots a doctor has published, then both meet by video and chat. The doctor writes a prescription and issues an invoice, which the patient pays (simulated payment). The user interface is in French.
 
 ### Features
@@ -144,6 +162,20 @@ SantéConnect is a PHP/MySQL telemedicine web app. A patient books one of the ti
 - **Documents**: the patient uploads PDF, JPG or PNG files; the doctor downloads them.
 - **Digital prescription**: saved for the patient of that consultation, shown in their area and sent by e-mail.
 - **Billing**: the doctor enters an amount, the patient sees it live and makes a **simulated payment**.
+
+### Live demo (static demo mode)
+
+A static version is published on GitHub Pages from the `docs/` folder: **https://valentin-auger-laboratoire.github.io/teleconsultation/**. The regular PHP application is unchanged.
+
+- On the home page, **Entrer comme patient (démo)** or **Entrer comme médecin (démo)** logs you straight into a fictitious account. Open a second tab with the other role to see the chat, the invoice and the video call live.
+- `docs/` holds a copy of the front-end pages (HTML, CSS, JS) plus `demo-api.js`, which replaces every call to the PHP scripts with simulated responses. Fictitious data (doctors, slots, appointments, messages, invoices, documents) lives in the browser's `localStorage`; the logged-in user is per tab (`sessionStorage`). **No PHP file, configuration or secret** is in `docs/`.
+- Tabs stay in sync through the `storage` event: confirmed appointments, chat messages, the invoice and the payment status show up instantly in the other tab.
+- Video uses PeerJS and its public cloud server, with random IDs shared between tabs through `localStorage`. If the camera is denied or missing, a clear message is shown and the call still connects (you see the other participant if they have a camera).
+- The prescription e-mail is shown in a preview window (nothing is sent), sign-up skips e-mail verification and payment stays simulated (no card fields).
+- Every page shows a "Mode démo – données fictives, aucun serveur, rien n'est envoyé" banner with a **Réinitialiser la démo** (reset) button that clears the demo data.
+- Uploaded files over 1 MB are accepted, but only their name is kept (`localStorage` is limited to a few MB).
+
+To publish it: *Settings → Pages → Deploy from a branch*, branch `main`, folder `/docs`. To try it locally, serve `docs/` with any static server (e.g. `python -m http.server`) and open `http://localhost:8000/`.
 
 ### Architecture
 

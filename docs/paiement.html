@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement - SantéConnect</title>
+    <script src="demo-api.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 15px; }
+        .btn-success { background-color: #28a745; border: none; font-weight: bold; }
+        .btn-success:hover { background-color: #218838; }
+        .amount-box { background-color: #e7f3ff; border: 1px solid #b6d4fe; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="alert alert-warning text-center fw-bold">Paiement simulé – démonstration</div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-4" id="contenu">
+            <p class="text-center text-muted mb-0">Chargement...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mode démo : remplace le rendu PHP de paiement.php. Sans ?id= : liste des factures. Avec ?id= : règlement d'une consultation.
+// Données insérées avec textContent / createElement (pas d'innerHTML sur des données)
+function el(tag, classe, texte) {
+    const e = document.createElement(tag);
+    if (classe) e.className = classe;
+    if (texte !== undefined) e.textContent = texte;
+    return e;
+}
+
+function lien(href, classe, texte) {
+    const a = el('a', classe, texte);
+    a.href = href;
+    return a;
+}
+
+function euros(montant) {
+    return Number(montant).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+const params = new URLSearchParams(location.search);
+const zone = document.getElementById('contenu');
+
+async function lireJson(reponse) {
+    if (reponse.status === 401 || reponse.status === 403) {
+        window.location.href = 'index.html';
+        throw new Error('non connecté');
+    }
+    return { ok: reponse.ok, donnees: await reponse.json() };
+}
+
+function afficherReglement(rdv) {
+    const contenu = [el('h4', 'card-title text-center mb-1', 'Paiement de la consultation'),
+                     el('p', 'text-center text-muted small mb-4', rdv.medecin + ' – ' + rdv.date_rdv)];
+
+    if (rdv.montant <= 0) {
+        contenu.push(el('p', 'text-center text-muted', "Aucune facture n'a encore été émise pour cette consultation."));
+    } else {
+        const boite = el('div', 'amount-box p-3 mb-4 d-flex justify-content-between align-items-center');
+        boite.append(el('span', 'text-primary fw-bold', 'Montant à régler :'), el('h4', 'm-0 text-dark', euros(rdv.montant)));
+        contenu.push(boite);
+
+        if (rdv.statut_paiement === 1) {
+            contenu.push(el('p', 'text-center fw-bold text-success', 'RÉGLÉ'));
+        } else {
+            // Formulaire intercepté par demo-api.js (valider_paiement.php simulé) : aucun champ carte
+            const form = el('form');
+            form.action = 'valider_paiement.php';
+            form.method = 'POST';
+            const id = el('input');
+            id.type = 'hidden';
+            id.name = 'id';
+            id.value = rdv.id;
+            const btn = el('button', 'btn btn-success w-100 py-3 mt-2 shadow-sm', 'Simuler le paiement');
+            btn.type = 'submit';
+            form.append(id, btn);
+            // Désactive le bouton après le clic pour éviter les doubles validations
+            form.addEventListener('submit', () => { btn.disabled = true; btn.textContent = 'Traitement...'; });
+            contenu.push(form, el('p', 'text-muted small text-center mt-2 mb-0', "Aucune donnée bancaire n'est demandée ni enregistrée."));
+        }
+    }
+
+    const retour = el('div', 'text-center mt-4');
+    retour.appendChild(rdv.statut === 'Confirmé'
+        ? lien('consultation.html?id=' + encodeURIComponent(rdv.id), 'text-decoration-none small text-secondary', 'Retourner à la consultation')
+        : lien('paiement.html', 'text-decoration-none small text-secondary', 'Retour à mes factures'));
+    contenu.push(retour);
+    zone.replaceChildren(...contenu);
+}
+
+function afficherFactures(factures) {
+    const contenu = [el('h4', 'card-title text-center mb-4', 'Mes factures')];
+    if (params.has('paiement')) contenu.push(el('div', 'alert alert-success small text-center', 'Paiement simulé enregistré.'));
+    if (factures.length === 0) contenu.push(el('p', 'text-center text-muted', 'Aucune facture pour le moment.'));
+
+    const liste = el('ul', 'list-group list-group-flush');
+    factures.forEach(f => {
+        const ligne = el('li', 'list-group-item d-flex justify-content-between align-items-center');
+        const infos = el('span', 'small', f.date_rdv);
+        infos.append(el('br'), el('span', 'text-muted', f.medecin));
+        const droite = el('span', 'text-end');
+        droite.append(el('strong', '', euros(f.montant)), el('br'));
+        droite.appendChild(f.statut_paiement === 1
+            ? el('span', 'badge bg-success', 'Réglé')
+            : lien('paiement.html?id=' + encodeURIComponent(f.id), 'btn btn-sm btn-outline-success py-0', 'Payer'));
+        ligne.append(infos, droite);
+        liste.appendChild(ligne);
+    });
+    const retour = el('div', 'text-center mt-4');
+    retour.appendChild(lien('dashboard.html', 'text-decoration-none small text-secondary', 'Retour à mon espace'));
+    contenu.push(liste, retour);
+    zone.replaceChildren(...contenu);
+}
+
+async function afficher() {
+    if (params.has('id')) {
+        const rdv = await fetch('get_consultation.php?id=' + encodeURIComponent(params.get('id'))).then(lireJson);
+        if (rdv.ok) return afficherReglement(rdv.donnees);
+    }
+    const factures = await fetch('get_factures.php').then(lireJson);
+    afficherFactures(factures.donnees);
+}
+
+afficher().catch(() => {});
+// Mode démo : la facture émise dans l'onglet du médecin apparaît tout de suite
+window.addEventListener('demo-maj', () => afficher().catch(() => {}));
+</script>
+
+</body>
+</html>
